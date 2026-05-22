@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 # 中间件会按顺序处理每一次请求和响应。
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -72,13 +73,52 @@ TEMPLATES = [
 # WSGI 是传统 Python Web 服务器启动 Django 项目时使用的入口。
 WSGI_APPLICATION = "jianlema_server.wsgi.application"
 
-# 数据库配置：当前使用 SQLite，数据库文件是 db.sqlite3。
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# 数据库配置：默认使用 SQLite；设置 DB_ENGINE=mysql 后连接远程 MySQL。
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").lower()
+
+if DB_ENGINE == "mysql":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("DB_NAME", ""),
+            "USER": os.getenv("DB_USER", ""),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", ""),
+            "PORT": os.getenv("DB_PORT", "3306"),
+            "OPTIONS": {
+                "charset": "utf8mb4",
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+REDIS_URL = os.getenv("REDIS_URL", "")
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+            "KEY_PREFIX": os.getenv("REDIS_KEY_PREFIX", "jianlema"),
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "jianlema-local-cache",
+        }
+    }
 
 # Django 自带的密码强度校验规则。
 AUTH_PASSWORD_VALIDATORS = [
@@ -109,6 +149,13 @@ USE_TZ = True
 
 # 静态文件 URL 前缀，例如后台 CSS/JS。
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # 新建模型时默认使用 BigAutoField 作为自增主键。
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

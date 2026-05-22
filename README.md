@@ -7,7 +7,8 @@ Python Django 服务端项目骨架。
 ```text
 后端框架：Django
 API 框架：Django REST Framework
-数据库：SQLite（当前开发环境）
+数据库：MySQL（远程环境），SQLite（本地默认兜底）
+缓存：Redis（远程环境），本地内存缓存（未配置 Redis 时兜底）
 鉴权：微信 OpenID + JWT
 后台管理：Django Admin
 oos +  ECS
@@ -18,12 +19,12 @@ oos +  ECS
 | 路径 | 说明 |
 | --- | --- |
 | `README.md` | 项目说明文档，包含目录说明、启动方式和接口说明。 |
-| `requirements.txt` | Python 依赖列表，当前包含 Django、DRF、SimpleJWT、python-dotenv、requests。 |
+| `requirements.txt` | Python 依赖列表，当前包含 Django、DRF、SimpleJWT、python-dotenv、requests、PyMySQL、django-redis。 |
 | `.gitignore` | Git 忽略规则。 |
 | `.env` | 本地环境变量文件，包含 Django 和微信小程序配置，不建议提交。 |
 | `.env.example` | 环境变量示例文件，用于说明需要配置的变量。 |
 | `manage.py` | Django 命令行入口，用于启动服务、执行迁移、运行测试等。 |
-| `db.sqlite3` | 本地开发数据库，由 `migrate` 命令生成。 |
+| `db.sqlite3` | 本地兜底开发数据库，由 `migrate` 命令生成。远程环境使用 MySQL。 |
 | `api/` | Django 应用目录，用于编写业务接口、模型、测试等。 |
 | `api/views.py` | API 视图文件，当前包含健康检查、微信登录、今日打卡接口。 |
 | `api/urls.py` | API 路由文件，注册 API 接口地址。 |
@@ -61,6 +62,58 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver 127.0.0.1:8000
 ```
+
+## 远程 MySQL 和 Redis 配置
+
+项目提供了 `docker-compose.yml`，可以统一启动本地 MySQL 和 Redis。先确认 `.env` 中包含下面这些变量：
+
+```env
+MYSQL_ROOT_PASSWORD=replace-with-root-password
+MYSQL_DATABASE=jianlema
+MYSQL_USER=jianlema
+MYSQL_PASSWORD=replace-with-app-db-password
+
+DB_ENGINE=mysql
+DB_NAME=jianlema
+DB_USER=jianlema
+DB_PASSWORD=replace-with-app-db-password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+
+REDIS_PASSWORD=replace-with-redis-password
+REDIS_URL=redis://:replace-with-redis-password@127.0.0.1:6379/0
+REDIS_KEY_PREFIX=jianlema
+```
+
+启动 MySQL 和 Redis：
+
+```powershell
+docker compose up -d
+```
+
+查看容器状态和日志：
+
+```powershell
+docker compose ps
+docker compose logs -f mysql
+docker compose logs -f redis
+```
+
+首次启动后执行依赖安装和数据库迁移：
+
+```powershell
+pip install -r requirements.txt
+py manage.py migrate
+py manage.py runserver 127.0.0.1:8000
+```
+
+停止容器：
+
+```powershell
+docker compose down
+```
+
+如果需要清空本地 MySQL 和 Redis 数据，先停止容器，再删除 `docker-data/` 目录。
 
 ## 接口
 
