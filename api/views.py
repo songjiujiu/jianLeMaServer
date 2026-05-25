@@ -25,8 +25,28 @@ def health_check(request):
     """
 
     return Response({"status": "ok", "service": "jianlema-server"})
-
-
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def health_goals(requests):
+    name = requests.query_params.get("name", "")
+    age = requests.query_params.get("age", "")
+    return  Response({"status": "ok", "service": {name:name,age:age}})
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def create_health_goal(request):
+    name = request.data.get("name", "")
+    age = request.data.get("age", "")
+    print(
+        "============================================="
+    )
+    return Response({
+        "status": "ok",
+        "message": "post received",
+        "data": {
+            "name": name,
+            "age": age,
+        }
+    })
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def dev_login(request):
