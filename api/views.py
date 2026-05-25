@@ -29,6 +29,41 @@ def health_check(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+def dev_login(request):
+    if not settings.DEBUG:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    username = request.data.get("username", "dev_user")
+    nickname = request.data.get("nickname", "开发测试用户")
+
+    User = get_user_model()
+    with transaction.atomic():
+        user, _ = User.objects.get_or_create(username=username)
+        profile, _ = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={"openid": f"dev_{username}"},
+        )
+        profile.nickname = nickname
+        profile.save(update_fields=["nickname", "updated_at"])
+        CheckInStreak.objects.get_or_create(user=user)
+
+    refresh = RefreshToken.for_user(user)
+    return Response(
+        {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "nickname": profile.nickname,
+                "openid": profile.openid,
+            },
+        }
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def wechat_login(request):
     """微信小程序登录接口。
 

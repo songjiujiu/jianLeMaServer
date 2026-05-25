@@ -7,7 +7,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # 读取项目根目录下的 .env 文件，把里面的环境变量加载进来。
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env", override=True)
 
 # Django 项目的密钥；线上环境必须换成更安全的随机字符串。
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-me-in-production")

@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .views import dev_login
 from .views import health_check
 from .views import today_check_in
 from .views import wechat_login
@@ -12,6 +13,7 @@ urlpatterns = [
     path("health/", health_check, name="health-check"),
     # POST /api/auth/wechat-login/：微信登录，返回 JWT token。
     path("auth/wechat-login/", wechat_login, name="wechat-login"),
+    path("auth/dev-login/", dev_login, name="dev-login"),
     # GET/POST /api/check-ins/today/：查询或提交今日打卡。
     path("check-ins/today/", today_check_in, name="today-check-in"),
 ]

@@ -13,7 +13,126 @@ API 框架：Django REST Framework
 后台管理：Django Admin
 oos +  ECS
 ```
+## 学习路径
+```text
+第一阶段：先跑起来
+目标：知道一个 Django 服务怎么启动、请求怎么进来。
+你先掌握这些命令：
+powershell
 
+
+
+.\.venv\Scripts\activate
+python manage.py runserver 127.0.0.1:8000
+python manage.py test
+python manage.py makemigrations
+python manage.py migrate
+
+然后打开：
+text
+
+
+
+GET /api/health/
+GET /api/check-ins/today/
+POST /api/check-ins/today/
+POST /api/auth/wechat-login/
+
+你要理解的链路是：
+text
+
+
+
+前端请求
+-> urls.py 匹配路由
+-> views.py 处理业务
+-> models.py 操作数据库
+-> Response 返回 JSON
+
+这对前端工程师很友好，因为你可以把 Django view 理解成“后端版的接口 handler”。
+第二阶段：按文件学
+你这个项目核心文件很少，学习顺序建议：
+manage.py
+先知道它是 Django 命令入口。
+
+jianlema_server/settings.py
+学配置：数据库、JWT、Redis、环境变量、时区、Django app 注册。
+
+jianlema_server/urls.py 和 api/urls.py
+学路由怎么分发。
+
+api/models.py
+学 ORM：表、字段、外键、一对一、唯一约束。
+
+api/views.py
+学接口：参数、鉴权、数据库查询、事务、返回 JSON。
+
+第三阶段：用小需求练手
+不要只看代码。你应该一边学一边加功能。建议按这个顺序做：
+新增“目标列表接口”
+GET /api/goals/ 返回当前用户的目标列表。
+
+新增“创建目标接口”
+POST /api/goals/ 创建一个目标。
+
+新增“删除或停用目标接口”
+不真删数据，把 is_active=False。
+
+新增“打卡历史接口”
+GET /api/check-ins/ 支持按日期分页查询。
+
+新增测试
+用 api/tests.py 测健康检查、目标创建、打卡逻辑。
+
+这几个需求做完，你就已经摸到后端核心了：路由、鉴权、ORM、业务规则、测试、数据库迁移。
+第四阶段：连接前端
+你是前端转全栈，这一步很重要。
+你要练：
+text
+
+前端登录微信
+-> 拿 code
+-> 请求 /api/auth/wechat-login/
+-> 保存 access token
+-> 后续请求带 Authorization: Bearer xxx
+-> 调用目标/打卡接口
+
+这时你会真正理解 JWT、登录态、接口错误码、跨端数据流。
+第五阶段：部署和服务器
+你项目里已经有：
+text
+
+Dockerfile
+docker-compose.yml
+gunicorn
+whitenoise
+MySQL
+Redis
+
+部署学习顺序：
+本地 SQLite 跑通。
+本地 Docker 启 MySQL、Redis。
+Django 切到 MySQL。
+服务器安装 Docker。
+上传项目或 git pull。
+配 .env。
+docker compose up -d --build。
+配 Nginx 反向代理。
+配域名和 HTTPS。
+你作为前端，最需要补的后端观念是这几个：
+text
+
+HTTP 请求生命周期
+数据库建模
+ORM 查询
+身份认证
+环境变量
+日志
+部署
+错误处理
+测试
+建议你接下来就从“目标接口”开始。我可以直接带你做第一步：在这个项目里新增 GET /api/goals/ 和 POST /api/goals/，一边写一边解释每一行为什么这么写。
+```
 ## 当前目录说明
 
 | 路径 | 说明 |
