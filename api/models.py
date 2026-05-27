@@ -66,6 +66,20 @@ class Goal(models.Model):
         return self.title
 
 
+class HealthGoal(models.Model):
+    name = models.CharField("姓名", max_length=100)
+    age = models.PositiveIntegerField("年龄")
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "练习目标"
+        verbose_name_plural = "练习目标"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} - {self.age}"
+
+
 class DailyCheckIn(models.Model):
     """每日打卡记录表。
 

@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import CheckInStreak, DailyCheckIn, Goal, UserProfile
+from .models import CheckInStreak, DailyCheckIn, Goal, HealthGoal, UserProfile
 
 
 @api_view(["GET"])
@@ -25,28 +25,103 @@ def health_check(request):
     """
 
     return Response({"status": "ok", "service": "jianlema-server"})
-@api_view(["GET"])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def health_goals(requests):
-    name = requests.query_params.get("name", "")
-    age = requests.query_params.get("age", "")
+    name = requests.data.get("name")
+    age = requests.data.get("age")
+    print(name,"name name name name")
+    if not name:
+        return Response({"detail": "name is required"}, status=status.HTTP_400_BAD_REQUEST)
+    if not age:
+        return Response({"detail": "age is required"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        age = int(age)
+    except ValueError:
+        return Response({"detail": "age is invalid"}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"status": "ok", "message":"post received","data":{"name":name, "age":age}},status=status.HTTP_200_OK)
+
     return  Response({"status": "ok", "service": {name:name,age:age}})
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def create_health_goal(request):
-    name = request.data.get("name", "")
+    name = request.data.get("name", "").strip()
     age = request.data.get("age", "")
-    print(
-        "============================================="
-    )
+
+    if not name:
+        return Response({"detail": "name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if age == "":
+        return Response({"detail": "age is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return Response({"detail": "age must be a number"}, status=status.HTTP_400_BAD_REQUEST)
+
+    health_goal = HealthGoal.objects.create(name=name, age=age)
+
     return Response({
         "status": "ok",
-        "message": "post received",
+        "message": "created",
         "data": {
-            "name": name,
-            "age": age,
+            "id": health_goal.id,
+            "name": health_goal.name,
+            "age": health_goal.age,
+            "created_at": health_goal.created_at,
         }
-    })
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def goals(request):
+    if request.method == "GET":
+        goal_list = Goal.objects.filter(user=request.user, is_active=True)
+        return Response(
+            {
+                "items": [
+                    {
+                        "id": goal.id,
+                        "title": goal.title,
+                        "description": goal.description,
+                        "is_active": goal.is_active,
+                        "created_at": goal.created_at,
+                        "updated_at": goal.updated_at,
+                    }
+                    for goal in goal_list
+                ]
+            }
+        )
+
+    title = request.data.get("title", "").strip()
+    description = request.data.get("description", "").strip()
+
+    if not title:
+        return Response(
+            {"detail": "title is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    goal = Goal.objects.create(
+        user=request.user,
+        title=title,
+        description=description,
+    )
+
+    return Response(
+        {
+            "id": goal.id,
+            "title": goal.title,
+            "description": goal.description,
+            "is_active": goal.is_active,
+            "created_at": goal.created_at,
+            "updated_at": goal.updated_at,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def dev_login(request):

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CheckInStreak, DailyCheckIn, Goal, UserProfile
+from .models import CheckInStreak, DailyCheckIn, Goal, HealthGoal, UserProfile
 
 
 # 下面这些类用于配置 Django 后台中每张表的显示方式。
@@ -21,6 +21,13 @@ class GoalAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "created_at")
     search_fields = ("title", "user__username")
     readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(HealthGoal)
+class HealthGoalAdmin(admin.ModelAdmin):
+    list_display = ("name", "age", "created_at")
+    search_fields = ("name",)
+    readonly_fields = ("created_at",)
 
 
 @admin.register(DailyCheckIn)

@@ -12,6 +12,8 @@ API 框架：Django REST Framework
 鉴权：微信 OpenID + JWT
 后台管理：Django Admin
 oos +  ECS
+docker exec -it mysql mysql -u root -p
+SHOW DATABASES;
 ```
 ## 学习路径
 ```text
