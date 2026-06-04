@@ -53,7 +53,7 @@ def create_health_goal(request):
 
     if age == "":
         return Response({"detail": "age is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+    print("================================")
     try:
         age = int(age)
     except (TypeError, ValueError):
