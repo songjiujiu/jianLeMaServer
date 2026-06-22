@@ -182,5 +182,5 @@ SIMPLE_JWT = {
 }
 
 # 微信小程序登录配置，从 .env 读取。
-WECHAT_APPID = os.getenv("WECHAT_APPID", "")
-WECHAT_SECRET = os.getenv("WECHAT_SECRET", "")
+WECHAT_APPID = os.getenv("WECHAT_APPID", "wxe7f2a0c603f57689")
+WECHAT_SECRET = os.getenv("WECHAT_SECRET", "04a6e4525f75e2755e573ec613c9bb81")
